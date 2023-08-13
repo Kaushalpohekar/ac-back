@@ -19,6 +19,23 @@ function fetchStatus(req, res) {
   }
 }
 
+function fetchLast6Status(req, res) {
+  const deviceStatusQuery = 'select * from ahu_control order by date_time DESC LIMIT 5';
+  try {
+    db.query(deviceStatusQuery, (error, status) => {
+      if (error) {
+        console.error('Error during Status check:', error);
+        return res.status(500).json({ message: 'Internal server error' });
+      }
+
+      res.status(200).json(status);
+    });
+  } catch (error) {
+    console.error('Error in Status check:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+}
+
 function fetchOnOffTimings(req, res) {
   const deviceStatusQuery = 'select * from ahu_control order by date_time ASC';
   try {
@@ -183,6 +200,7 @@ function register(req, res) {
 
 module.exports = {
   fetchStatus,
+  fetchLast6Status,
   fetchOnOffTimings,
   login,
   register

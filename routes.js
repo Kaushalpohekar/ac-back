@@ -4,6 +4,7 @@ const main = require('./mqtt-control/main');
 
 
 router.get('/status', main.fetchStatus);
+router.get('/OnOffStatus', main.fetchLast6Status);
 router.get('/time', main.fetchOnOffTimings);
 router.post('/login', main.login);
 router.post('/register', main.register);
