@@ -31,7 +31,7 @@ client.on('connect', () => {
 
 client.on('message', (topic, message) => {
   const data = JSON.parse(message.toString());
-  console.log('Received message:', data);
+  //console.log('Received message:', data);
 
   // Check if the LED state has changed
   if (data.ledState !== previousLedState) {
@@ -49,7 +49,7 @@ client.on('message', (topic, message) => {
       if (err) {
         console.error('Error inserting data into the database:', err);
       } else {
-        console.log('Data inserted into the database:', result);
+        //console.log('Data inserted into the database:', result);
       }
     });
 
