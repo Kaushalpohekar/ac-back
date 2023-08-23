@@ -91,7 +91,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 
+highcharts
+https://www.highcharts.com/license
+
 mqtt-browser
+MIT
+
+ngx-bootstrap/mini-ngrx
+MIT
+
+ngx-bootstrap/timepicker
 MIT
 
 ngx-mqtt
