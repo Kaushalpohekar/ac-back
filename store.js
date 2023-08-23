@@ -12,7 +12,7 @@ let previousLedState = null;
 const dbConfig = {
   host: 'senselivedb.cn5vfllmzwrp.ap-south-1.rds.amazonaws.com',
   user: 'admin',
-  password: 'sense123',
+  password: 'Sense123',
   database: 'AHU',
 };
 

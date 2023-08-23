@@ -198,10 +198,176 @@ function register(req, res) {
   }
 }
 
+function fetchSchedule(req, res) {
+  const ScheduleQuery = 'select * from ahu_schedule order by start_time ASC';
+  try {
+    db.query(ScheduleQuery, (error, Schedule) => {
+      if (error) {
+        console.error('Error during Status check:', error);
+        return res.status(500).json({ message: 'Internal server error' });
+      }
+
+      res.status(200).json(Schedule);
+    });
+  } catch (error) {
+    console.error('Error in Status check:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+}
+
+
+function addSchedule(req, res) {
+  const { start_time, end_time, deviceID } = req.body;
+  try {
+    const checkStartTimeQuery = 'SELECT * FROM ahu_schedule WHERE start_time = ?';
+    const insertScheduleQuery = 'INSERT INTO ahu_schedule (start_time, end_time, deviceID) VALUES (?,?,?)';
+
+    db.query(checkStartTimeQuery, [start_time], (checkError, checkResult) => {
+      if (checkError) {
+        console.error('Error while checking schedule:', checkError);
+        return res.status(500).json({ message: 'Internal server error' });
+      }
+
+      if (checkResult.length > 0) {
+        return res.status(400).json({ message: 'Schedule already added' });
+      }
+
+      db.query(insertScheduleQuery, [start_time, end_time, deviceID], (insertError, insertResult) => {
+        if (insertError) {
+          console.error('Error while inserting schedule:', insertError);
+          return res.status(500).json({ message: 'Internal server error' });
+        }
+
+        return res.json({ message: 'Schedule added successfully!' });
+      });
+    });
+  } catch (error) {
+    console.error('Error in adding schedule:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+}
+
+function editSchedule(req, res) {
+  const id = req.params.id;
+  const { start_time, end_time}  = req.body; 
+  const ScheduleCheckQuery = 'SELECT * FROM ahu_schedule WHERE id = ?';
+
+  db.query(ScheduleCheckQuery, [id], (error, ScheduleCheckResult) => {
+    if (error) {
+      console.error('Error during Schedule check:', error);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+
+    try {
+      if (ScheduleCheckResult.length === 0) {
+        return res.status(400).json({ message: 'Schedule not found!' });
+      }
+
+      const ScheduleQuery = 'Update ahu_schedule SET start_time = ?, end_time = ? WHERE id = ?';
+
+      db.query(ScheduleQuery, [start_time, end_time, id], (error, schedules) => {
+        if (error) {
+          console.error('Error fetching schedules:', error);
+          return res.status(500).json({ message: 'Internal server error' });
+        }
+
+        res.json({ message: 'Schedule Updated SuccessFully' });
+      });
+    } catch (error) {
+      console.error('Error fetching user:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+}
+
+function deleteSchedule(req, res) {
+  const id = req.params.id;
+  const ScheduleCheckQuery = 'SELECT * FROM ahu_schedule WHERE id = ?';
+
+  db.query(ScheduleCheckQuery, [id], (error, ScheduleCheckResult) => {
+    if (error) {
+      console.error('Error during Schedule check:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+
+    if (ScheduleCheckResult.length === 0) {
+      return res.status(400).json({ message: 'Schedule not found!' });
+    }
+
+    const DeleteQuery = 'DELETE FROM ahu_schedule WHERE id = ?';
+
+    db.query(DeleteQuery, [id], (error) => {
+      if (error) {
+        console.error('Error deleting schedule:', error);
+        res.status(500).json({ message: 'Internal server error' });
+      }
+
+      res.json({ message: 'Schedule Deleted Successfully' });
+    });
+  });
+}
+  function fetchOnOffTimingForLast30Days(req, res) {
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - 30); // Start from 30 days ago
+
+    const deviceStatusQuery = 'SELECT date_time, ledState FROM ahu_control WHERE date_time >= ? AND date_time <= ? ORDER BY date_time';
+    try {
+      db.query(deviceStatusQuery, [startDate, endDate], (error, statusEntries) => {
+        if (error) {
+          console.error('Error during Status check:', error);
+          return res.status(500).json({ message: 'Internal server error' });
+        }
+
+        const dailyOnOffTimes = {};
+
+        let prevTimestamp = null;
+        let prevState = null;
+
+        statusEntries.forEach(entry => {
+          const { date_time, ledState } = entry;
+          const date = new Date(date_time);
+          const dayKey = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+
+          if (!dailyOnOffTimes[dayKey]) {
+            dailyOnOffTimes[dayKey] = { on: 0, off: 0 };
+          }
+
+          if (prevTimestamp && prevState) {
+            const timeDifference = date.getTime() - prevTimestamp.getTime();
+            if (prevState === 'on') {
+              dailyOnOffTimes[dayKey].on += timeDifference;
+            } else if (prevState === 'off') {
+              dailyOnOffTimes[dayKey].off += timeDifference;
+            }
+          }
+
+          prevTimestamp = date;
+          prevState = ledState;
+        });
+
+        for (const dayKey in dailyOnOffTimes) {
+          dailyOnOffTimes[dayKey].on /= (1000 * 60); // Convert to minutes
+          dailyOnOffTimes[dayKey].off /= (1000 * 60); // Convert to minutes
+        }
+
+        res.status(200).json(dailyOnOffTimes);
+      });
+    } catch (error) {
+      console.error('Error in Status check:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  }
+
 module.exports = {
   fetchStatus,
   fetchLast6Status,
   fetchOnOffTimings,
   login,
-  register
+  register,
+  fetchSchedule,
+  addSchedule,
+  editSchedule,
+  deleteSchedule,
+  fetchOnOffTimingForLast30Days
 };
