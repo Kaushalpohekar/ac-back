@@ -16,7 +16,7 @@ dbConnection.connect();
 const mqttClient = mqtt.connect('mqtt://broker.emqx.io');
 
 // Define the MQTT topics
-const Topic = 'sense/device/ahu';
+const Topic = '/device/ahu';
 
 // Function to check and publish MQTT messages
 // Function to check and publish MQTT messages
