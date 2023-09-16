@@ -11,7 +11,7 @@ const client = mqtt.connect(broker);
 const db = {
   host: 'senselivedb.cn5vfllmzwrp.ap-south-1.rds.amazonaws.com',
   user: 'admin',
-  password: 'sense123',
+  password: 'sense!123',
   database: 'AHU',
 };
 const dbConnection = mysql.createConnection(db);

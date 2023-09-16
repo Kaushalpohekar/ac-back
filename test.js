@@ -5,7 +5,7 @@ const mqtt = require('mqtt');
 const dbConnection = mysql.createConnection({
   host: 'senselivedb.cn5vfllmzwrp.ap-south-1.rds.amazonaws.com',
   user: 'admin',
-  password: 'sense123',
+  password: 'sense!123',
   database: 'AHU',
 });
 
